@@ -3,6 +3,7 @@ import os, weakref, re
 from ..pgcollections import OrderedDict
 from ..python2_3 import asUnicode, basestring
 from .ParameterItem import ParameterItem
+from math import isnan
 
 PARAM_TYPES = {}
 PARAM_NAMES = {}
@@ -262,7 +263,7 @@ class Parameter(QtCore.QObject):
             if blockSignal is not None:
                 self.sigValueChanged.disconnect(blockSignal)
             value = self._interpretValue(value)
-            if self.opts['value'] == value:
+            if self.opts['value'] == value or all((isinstance(val, float) and isnan(val)) for val in (value, self.opts['value'])):
                 return value
             self.opts['value'] = value
             self.sigValueChanged.emit(self, value)
