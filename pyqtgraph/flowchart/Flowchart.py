@@ -45,6 +45,7 @@ class Flowchart(Node):
     sigStateChanged = QtCore.Signal()  # called when output is expected to have changed
     sigChartChanged = QtCore.Signal(object, object, object) # called when nodes are added, removed, or renamed.
                                                             # (self, action, node)
+    sigChartWindowClosed = QtCore.Signal()
     
     def __init__(self, terminals=None, name=None, filePath=None, library=None):
         self.library = library or LIBRARY
@@ -431,6 +432,7 @@ class Flowchart(Node):
         """
         if self._widget is None:
             self._widget = FlowchartCtrlWidget(self)
+            self._widget.sigChartWindowClosed.connect(self.sigChartWindowClosed.emit)
             self.scene = self._widget.scene()
             self.viewBox = self._widget.viewBox()
         return self._widget
@@ -601,7 +603,23 @@ class FlowchartGraphicsItem(GraphicsObject):
 
 class FlowchartCtrlWidget(QtGui.QWidget):
     """The widget that contains the list of all the nodes in a flowchart and their controls, as well as buttons for loading/saving flowcharts."""
-    
+
+    sigChartWindowClosed = QtCore.Signal()
+
+    class _CloseEventFilter(QtCore.QObject):
+        sigClosed = QtCore.Signal()
+
+        def __init__(self, window):
+            super().__init__()
+            self.window = window
+
+        def eventFilter(self, obj, event):
+            if obj is self.window and event.type() in (QtCore.QEvent.Close, QtCore.QEvent.Hide):
+                self.sigClosed.emit()
+                return False
+            else:
+                return super().eventFilter(obj, event)
+
     def __init__(self, chart):
         self.items = {}
         #self.loadDir = loadDir  ## where to look initially for chart files
@@ -622,6 +640,11 @@ class FlowchartCtrlWidget(QtGui.QWidget):
         self.cwWin.setWindowTitle('Flowchart')
         self.cwWin.setCentralWidget(self.chartWidget)
         self.cwWin.resize(1000,800)
+
+        self.closeEventFilter = self._CloseEventFilter(self.cwWin)
+        self.closeEventFilter.sigClosed.connect(self.chartClosed)
+
+        self.cwWin.installEventFilter(self.closeEventFilter)
         
         h = self.ui.ctrlList.header()
         if QT_LIB in ['PyQt4', 'PySide']:
@@ -637,18 +660,21 @@ class FlowchartCtrlWidget(QtGui.QWidget):
         self.chart.sigFileLoaded.connect(self.setCurrentFile)
         self.ui.reloadBtn.clicked.connect(self.reloadClicked)
         self.chart.sigFileSaved.connect(self.fileSaved)
-        
-    
-        
+
     #def resizeEvent(self, ev):
         #QtGui.QWidget.resizeEvent(self, ev)
         #self.ui.ctrlList.setColumnWidth(0, self.ui.ctrlList.viewport().width()-20)
         
     def chartToggled(self, b):
-        if b:
+        if b and not self.cwWin.isVisible():
             self.cwWin.show()
-        else:
+        elif not b and self.cwWin.isVisible():
             self.cwWin.hide()
+
+    def chartClosed(self):
+        if self.ui.showChartBtn.isChecked():
+            self.ui.showChartBtn.setChecked(False)
+        self.sigChartWindowClosed.emit()
 
     def reloadClicked(self):
         try:
@@ -766,6 +792,7 @@ class FlowchartCtrlWidget(QtGui.QWidget):
 
 class FlowchartWidget(dockarea.DockArea):
     """Includes the actual graphical flowchart and debugging interface"""
+
     def __init__(self, chart, ctrl):
         #QtGui.QWidget.__init__(self)
         dockarea.DockArea.__init__(self)
@@ -821,7 +848,6 @@ class FlowchartWidget(dockarea.DockArea):
         #self.view.sigClicked.connect(self.showViewMenu)
         #self._scene.sigSceneContextMenu.connect(self.showViewMenu)
         #self._viewBox.sigActionPositionChanged.connect(self.menuPosChanged)
-        
         
     def reloadLibrary(self):
         #QtCore.QObject.disconnect(self.nodeMenu, QtCore.SIGNAL('triggered(QAction*)'), self.nodeMenuTriggered)
