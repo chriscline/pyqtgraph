@@ -786,8 +786,11 @@ class FlowchartCtrlWidget(QtGui.QWidget):
         self.chartWidget.clear()
         
     def select(self, node):
-        item = self.items[node]
-        self.ui.ctrlList.setCurrentItem(item)
+        try:
+            item = self.items[node]
+            self.ui.ctrlList.setCurrentItem(item)
+        except KeyError as e:
+            self.ui.ctrlList.clearSelection()
 
 
 class FlowchartWidget(dockarea.DockArea):
