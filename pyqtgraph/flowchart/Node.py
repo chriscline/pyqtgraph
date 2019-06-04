@@ -358,9 +358,21 @@ class Node(QtCore.QObject):
         
     def recolor(self):
         if self.exception is None:
-            self.graphicsItem().setPen(QtGui.QPen(QtGui.QColor(0, 0, 0)))
+            if self._bypass:
+                self.graphicsItem().pen = QtGui.QPen(QtGui.QColor(220, 220, 220), 3)
+                self.graphicsItem().brush = fn.mkBrush(240, 240, 240, 150)
+                self.graphicsItem().hoverBrush = fn.mkBrush(220, 220, 220, 200)
+            else:
+                self.graphicsItem().pen = QtGui.QPen(QtGui.QColor(0, 0, 0))
+                self.graphicsItem().brush = fn.mkBrush(200, 200, 200, 150)
+                self.graphicsItem().hoverBrush = fn.mkBrush(200, 200, 200, 200)
         else:
-            self.graphicsItem().setPen(QtGui.QPen(QtGui.QColor(150, 0, 0), 3))
+            self.graphicsItem().pen = QtGui.QPen(QtGui.QColor(150, 0, 0), 3)
+            self.graphicsItem().brush = fn.mkBrush(200, 200, 200, 150)
+            self.graphicsItem().hoverBrush = fn.mkBrush(200, 200, 200, 200)
+
+        self.graphicsItem().update()
+
 
     def saveState(self):
         """Return a dictionary representing the current state of this node
