@@ -668,6 +668,7 @@ class FlowchartCtrlWidget(QtGui.QWidget):
     def chartToggled(self, b):
         if b and not self.cwWin.isVisible():
             self.cwWin.show()
+            self.chartWidget.viewBox().autoRange()
         elif not b and self.cwWin.isVisible():
             self.cwWin.hide()
 
