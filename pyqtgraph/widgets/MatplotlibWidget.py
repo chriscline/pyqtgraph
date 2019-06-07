@@ -41,6 +41,9 @@ class MatplotlibWidget(QtGui.QWidget):
             self.toolbar = NavigationToolbar(self.canvas, self)
             self.vbox.addWidget(self.toolbar)
 
+        # for some reason this causes child to be invisible if set to (0,0,0,0)...
+        self.vbox.setContentsMargins(1, 1, 1, 1)
+
         self.vbox.addWidget(self.canvas)
 
         self.setLayout(self.vbox)
