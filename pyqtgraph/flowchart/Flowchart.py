@@ -38,8 +38,8 @@ def strDict(d):
 class Flowchart(Node):
     sigFileLoaded = QtCore.Signal(object)
     sigFileSaved = QtCore.Signal(object)
-    
-    
+
+
     #sigOutputChanged = QtCore.Signal() ## inherited from Node
     sigChartLoaded = QtCore.Signal()
     sigStateChanged = QtCore.Signal()  # called when output is expected to have changed
@@ -47,7 +47,7 @@ class Flowchart(Node):
                                                             # (self, action, node)
     sigChartWindowClosed = QtCore.Signal()
     
-    def __init__(self, terminals=None, name=None, filePath=None, library=None):
+    def __init__(self, terminals=None, name=None, filePath=None, library=None, CtrlWidgetCls=None):
         self.library = library or LIBRARY
         if name is None:
             name = "Flowchart"
@@ -65,9 +65,14 @@ class Flowchart(Node):
         self._widget = None
         self._scene = None
         self.processing = False ## flag that prevents recursive node updates
-        
-        self.widget()
-        
+
+        if CtrlWidgetCls is None:
+            CtrlWidgetCls = FlowchartCtrlWidget
+        self._widget = CtrlWidgetCls(self)
+        self._widget.sigChartWindowClosed.connect(self.sigChartWindowClosed.emit)
+        self.scene = self._widget.scene()
+        self.viewBox = self._widget.viewBox()
+
         self.inputNode = Node('Input', allowRemove=False, allowAddOutput=True)
         self.outputNode = Node('Output', allowRemove=False, allowAddInput=True)
         self.addNode(self.inputNode, 'Input', [-150, 0])
@@ -430,11 +435,7 @@ class Flowchart(Node):
         This widget provides GUI access to the parameters for each node and a
         graphical representation of the flowchart.
         """
-        if self._widget is None:
-            self._widget = FlowchartCtrlWidget(self)
-            self._widget.sigChartWindowClosed.connect(self.sigChartWindowClosed.emit)
-            self.scene = self._widget.scene()
-            self.viewBox = self._widget.viewBox()
+
         return self._widget
 
     def listConnections(self):
