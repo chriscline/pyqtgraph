@@ -106,6 +106,9 @@ class WidgetParameterItem(ParameterItem):
                 defs['int'] = True
                 defs['minStep'] = 1.0
                 defs['format'] = '{value:d}'
+            elif t == 'float':
+                defs['dec'] = True
+                defs['step'] = 0.1
             for k in defs:
                 if k in opts:
                     defs[k] = opts[k]
