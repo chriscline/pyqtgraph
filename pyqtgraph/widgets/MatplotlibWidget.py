@@ -29,9 +29,9 @@ class MatplotlibWidget(QtGui.QWidget):
         mw.draw()
     """
     
-    def __init__(self, size=(5.0, 4.0), dpi=100, doShowToolbar=True):
+    def __init__(self, size=(5.0, 4.0), dpi=100, doShowToolbar=True, tight_layout=None):
         QtGui.QWidget.__init__(self)
-        self.fig = Figure(size, dpi=dpi)
+        self.fig = Figure(size, dpi=dpi, tight_layout=tight_layout)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self)
         
