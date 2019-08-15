@@ -618,11 +618,13 @@ class ActionParameterItem(ParameterItem):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layoutWidget.setLayout(self.layout)
         self.button = QtGui.QPushButton(param.name())
+        self.button.setEnabled(param.opts['enabled'])
         #self.layout.addSpacing(100)
         self.layout.addWidget(self.button)
         self.layout.addStretch()
         self.button.clicked.connect(self.buttonClicked)
         param.sigNameChanged.connect(self.paramRenamed)
+        param.sigOptionsChanged.connect(self.optionsChanged)
         self.setText(0, '')
         
     def treeWidgetChanged(self):
@@ -636,6 +638,10 @@ class ActionParameterItem(ParameterItem):
         
     def paramRenamed(self, param, name):
         self.button.setText(name)
+
+    def optionsChanged(self, param, changed):
+        if 'enabled' in changed:
+            self.button.setEnabled(changed['enabled'])
         
     def buttonClicked(self):
         self.param.activate()
