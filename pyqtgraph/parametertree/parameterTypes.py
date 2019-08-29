@@ -443,6 +443,7 @@ class GroupParameterItem(ParameterItem):
             ParameterItem.addChild(self, child)
             
     def optsChanged(self, param, changed):
+        ParameterItem.optsChanged(self, param, changed)
         if 'addList' in changed:
             self.updateAddList()
                 
