@@ -4,6 +4,7 @@ import weakref
 from ..graphicsItems.GraphicsObject import GraphicsObject
 from .. import functions as fn
 from ..Point import Point
+from math import sqrt
 
 
 class Terminal(object):
@@ -456,7 +457,7 @@ class ConnectionItem(GraphicsObject):
         self.path = None
         self.shapePath = None
         self.style = {
-            'shape': 'line',
+            'shape': 'cubic',
             'color': (100, 100, 250),
             'width': 1.0,
             'hoverColor': (150, 150, 250),
@@ -503,7 +504,21 @@ class ConnectionItem(GraphicsObject):
         if self.style['shape'] == 'line':
             path.lineTo(stop)
         elif self.style['shape'] == 'cubic':
-            path.cubicTo(Point(stop.x(), start.y()), Point(start.x(), stop.y()), Point(stop.x(), stop.y()))
+            if False:
+                path.cubicTo(Point(stop.x(), start.y()), Point(start.x(), stop.y()), Point(stop.x(), stop.y()))
+            else:
+                srcCtrlPtOffset = min(100., sqrt((start.x() - stop.x())**2 + (start.y() - stop.y())**2))
+                if self.source.term.isInput():
+                    srcCtrlPtOffset *= -1
+                trgCtrlPtOffset = srcCtrlPtOffset
+                if self.target is None or \
+                        isinstance(self.target, QtCore.QPointF) or \
+                        self.source.term.isInput() != self.target.term.isInput():
+                    trgCtrlPtOffset *= -1
+
+                path.cubicTo(Point(start.x() + srcCtrlPtOffset, start.y()),
+                             Point(stop.x() + trgCtrlPtOffset, stop.y()),
+                             Point(stop.x(), stop.y()))
         else:
             raise Exception('Invalid shape "%s"; options are "line" or "cubic"' % self.style['shape'])
         return path
