@@ -185,8 +185,8 @@ class Terminal(object):
                 raise Exception('Already connected')
             if term is self:
                 raise Exception('Not connecting terminal to self')
-            if term.node() is self.node():
-                raise Exception("Can't connect to terminal on same node.")
+            # if term.node() is self.node():
+            #     raise Exception("Can't connect to terminal on same node.")
             for t in [self, term]:
                 if t.isInput() and not t._multi and len(t.connections()) > 0:
                     raise Exception("Cannot connect %s <-> %s: Terminal %s is already connected to %s (and does not allow multiple connections)" % (self, term, t, list(t.connections().keys())))

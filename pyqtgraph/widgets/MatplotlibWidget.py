@@ -1,8 +1,8 @@
-from ..Qt import QtGui, QtCore, USE_PYSIDE, USE_PYQT5
+from ..Qt import QtGui, QtCore, QT_LIB
 import matplotlib
 
-if not USE_PYQT5:
-    if USE_PYSIDE:
+if QT_LIB != 'PyQt5':
+    if QT_LIB == 'PySide':
         matplotlib.rcParams['backend.qt4']='PySide'
 
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -29,17 +29,23 @@ class MatplotlibWidget(QtGui.QWidget):
         mw.draw()
     """
     
-    def __init__(self, size=(5.0, 4.0), dpi=100):
+    def __init__(self, size=(5.0, 4.0), dpi=100, doShowToolbar=True, tight_layout=None):
         QtGui.QWidget.__init__(self)
-        self.fig = Figure(size, dpi=dpi)
+        self.fig = Figure(size, dpi=dpi, tight_layout=tight_layout)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self)
-        self.toolbar = NavigationToolbar(self.canvas, self)
         
         self.vbox = QtGui.QVBoxLayout()
-        self.vbox.addWidget(self.toolbar)
+
+        if doShowToolbar:
+            self.toolbar = NavigationToolbar(self.canvas, self)
+            self.vbox.addWidget(self.toolbar)
+
+        # for some reason this causes child to be invisible if set to (0,0,0,0)...
+        self.vbox.setContentsMargins(1, 1, 1, 1)
+
         self.vbox.addWidget(self.canvas)
-        
+
         self.setLayout(self.vbox)
 
     def getFigure(self):
