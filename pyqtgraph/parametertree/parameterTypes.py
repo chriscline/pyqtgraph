@@ -105,6 +105,9 @@ class WidgetParameterItem(ParameterItem):
                 defs['int'] = True
                 defs['minStep'] = 1.0
                 defs['format'] = '{value:d}'
+            elif t == 'float':
+                defs['dec'] = True
+                defs['step'] = 0.1
             for k in defs:
                 if k in opts:
                     defs[k] = opts[k]
@@ -606,6 +609,7 @@ class ActionParameterItem(ParameterItem):
         self.layout.addStretch()
         self.button.clicked.connect(self.buttonClicked)
         param.sigNameChanged.connect(self.paramRenamed)
+        param.sigOptionsChanged.connect(self.optionsChanged)
         self.setText(0, '')
         
     def treeWidgetChanged(self):
@@ -619,6 +623,10 @@ class ActionParameterItem(ParameterItem):
         
     def paramRenamed(self, param, name):
         self.button.setText(name)
+        
+    def optionsChanged(self, param, changed):
+        if 'enabled' in changed:
+            self.button.setEnabled(changed['enabled'])
         
     def buttonClicked(self):
         self.param.activate()
