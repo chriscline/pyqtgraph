@@ -106,8 +106,9 @@ jobs:
         fi      
         conda info
         conda install $(qt.bindings) numpy scipy pyopengl h5py six --yes --quiet
+        pip install matplotlib
       else
-        pip install $(qt.bindings) numpy scipy pyopengl h5py six
+        pip install $(qt.bindings) numpy scipy pyopengl h5py six matplotlib
       fi
       pip install pytest pytest-cov coverage pytest-xdist
       if [ $(python.version) == "2.7" ]
@@ -135,7 +136,12 @@ jobs:
       then
         source activate test-environment-$(python.version)
       fi
-      pip install PyVirtualDisplay==0.2.5 pytest-xvfb
+      if [ $(python.version) == "2.7" ]
+      then
+        pip install PyVirtualDisplay==0.2.5 pytest-xvfb==1.2.0
+      else
+        pip install pytest-xvfb
+      fi
     displayName: "Virtual Display Setup"
     condition: eq(variables['agent.os'], 'Linux' )
 
