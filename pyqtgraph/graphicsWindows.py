@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-DEPRECATED:  The classes below are convenience classes that create a new window
-containting a single, specific widget. These classes are now unnecessary because
-it is possible to place any widget into its own window by simply calling its
-show() method.
+graphicsWindows.py -  Convenience classes which create a new window with PlotWidget or ImageView.
+Copyright 2010  Luke Campagnola
+Distributed under MIT/X11 license. See license.txt for more information.
 """
 
 from .Qt import QtCore, QtGui, mkQApp
