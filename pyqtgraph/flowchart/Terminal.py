@@ -463,11 +463,11 @@ class ConnectionItem(GraphicsObject):
         self.style = {
             'shape': 'cubic',
             'color': (100, 100, 250),
-            'width': 1.0,
+            'width': 3.0,
             'hoverColor': (150, 150, 250),
-            'hoverWidth': 1.0,
+            'hoverWidth': 6.0,
             'selectedColor': (200, 200, 0),
-            'selectedWidth': 3.0,
+            'selectedWidth': 6.0,
             }
         self.source.getViewBox().addItem(self)
         self.updateLine()

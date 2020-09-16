@@ -359,15 +359,15 @@ class Node(QtCore.QObject):
     def recolor(self):
         if self.exception is None:
             if self._bypass:
-                self.graphicsItem().pen = QtGui.QPen(QtGui.QColor(220, 220, 220), 3)
+                self.graphicsItem().pen = QtGui.QPen(QtGui.QColor(220, 220, 220), 4)
                 self.graphicsItem().brush = fn.mkBrush(240, 240, 240, 150)
                 self.graphicsItem().hoverBrush = fn.mkBrush(220, 220, 220, 200)
             else:
-                self.graphicsItem().pen = QtGui.QPen(QtGui.QColor(0, 0, 0))
+                self.graphicsItem().pen = QtGui.QPen(QtGui.QColor(0, 0, 0), 2)
                 self.graphicsItem().brush = fn.mkBrush(200, 200, 200, 150)
                 self.graphicsItem().hoverBrush = fn.mkBrush(200, 200, 200, 200)
         else:
-            self.graphicsItem().pen = QtGui.QPen(QtGui.QColor(150, 0, 0), 3)
+            self.graphicsItem().pen = QtGui.QPen(QtGui.QColor(150, 0, 0), 4)
             self.graphicsItem().brush = fn.mkBrush(200, 200, 200, 150)
             self.graphicsItem().hoverBrush = fn.mkBrush(200, 200, 200, 200)
 
@@ -455,13 +455,13 @@ class NodeGraphicsItem(GraphicsObject):
         GraphicsObject.__init__(self)
         #QObjectWorkaround.__init__(self)
         
-        #self.shadow = QtGui.QGraphicsDropShadowEffect()
-        #self.shadow.setOffset(5,5)
-        #self.shadow.setBlurRadius(10)
-        #self.setGraphicsEffect(self.shadow)
+        self.shadow = QtGui.QGraphicsDropShadowEffect()
+        self.shadow.setOffset(2,2)
+        self.shadow.setBlurRadius(10)
+        self.setGraphicsEffect(self.shadow)
         
-        self.pen = fn.mkPen(0,0,0)
-        self.selectPen = fn.mkPen(200,200,200,width=2)
+        self.pen = fn.mkPen(0,0,0, width=2)
+        self.selectPen = fn.mkPen(200,200,200,width=4)
         self.brush = fn.mkBrush(200, 200, 200, 150)
         self.hoverBrush = fn.mkBrush(200, 200, 200, 200)
         self.selectBrush = fn.mkBrush(200, 200, 255, 200)
@@ -547,7 +547,7 @@ class NodeGraphicsItem(GraphicsObject):
             item.setAnchor(0, y)
             self.terminals[i] = (t, item)
             y += nodeOffset
-        
+
         # Populate inputs
         y = titleOffset
         for i, t in out.items():
