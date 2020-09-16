@@ -435,7 +435,11 @@ class TerminalGraphicsItem(GraphicsObject):
         
     def connectPoint(self):
         ## return the connect position of this terminal in view coords
-        return self.mapToView(self.mapFromItem(self.box, self.box.boundingRect().center()))
+        if True:
+            origin = QtCore.QPointF(-5. if self.term.isInput() else 5., 0.) + self.box.boundingRect().center()
+            return self.mapToView(self.mapFromItem(self.box, origin))
+        else:
+            return self.mapToView(self.mapFromItem(self.box, self.box.boundingRect().center()))
 
     def nodeMoved(self):
         for t, item in self.term.connections().items():
@@ -507,7 +511,8 @@ class ConnectionItem(GraphicsObject):
             if False:
                 path.cubicTo(Point(stop.x(), start.y()), Point(start.x(), stop.y()), Point(stop.x(), stop.y()))
             else:
-                srcCtrlPtOffset = min(100., sqrt((start.x() - stop.x())**2 + (start.y() - stop.y())**2))
+                #srcCtrlPtOffset = min(50., sqrt((start.x() - stop.x())**2 + (start.y() - stop.y())**2/2))
+                srcCtrlPtOffset = min(100, abs(start.x() - stop.x())/2)
                 if self.source.term.isInput():
                     srcCtrlPtOffset *= -1
                 trgCtrlPtOffset = srcCtrlPtOffset
@@ -516,9 +521,61 @@ class ConnectionItem(GraphicsObject):
                         self.source.term.isInput() != self.target.term.isInput():
                     trgCtrlPtOffset *= -1
 
-                path.cubicTo(Point(start.x() + srcCtrlPtOffset, start.y()),
-                             Point(stop.x() + trgCtrlPtOffset, stop.y()),
+                srcCtrlX = start.x() + srcCtrlPtOffset
+                srcCtrlY = start.y()
+
+                trgCtrlX = stop.x() + trgCtrlPtOffset
+                trgCtrlY = stop.y()
+
+                path.cubicTo(Point(srcCtrlX, srcCtrlY),
+                             Point(trgCtrlX, trgCtrlY),
                              Point(stop.x(), stop.y()))
+
+                if True:
+                    # further refine path for some special cases (e.g. output of right node going to input of left node)
+                    srcNodeGI = self.source.term.node().graphicsItem()
+                    if self.target is not None and isinstance(self.target, TerminalGraphicsItem):
+                        trgNodeGI = self.target.term.node().graphicsItem()
+                    else:
+                        trgNodeGI = None
+
+                    def intersectsWithPath(nodeGI):
+                        if nodeGI is None:
+                            return False
+                        return self.mapFromView(nodeGI.mapFromItem(self, path)).intersects(nodeGI.bounds.adjusted(2, 2, -2, -2))
+
+                    if intersectsWithPath(srcNodeGI) or intersectsWithPath(trgNodeGI):
+                        midPt = (stop - start) / 2 + start
+                        if True and trgNodeGI is not None:
+                            srcNodeBounds = self.source.mapToView(self.source.mapFromItem(srcNodeGI, srcNodeGI.bounds)).boundingRect()
+                            trgNodeBounds = self.target.mapToView(self.target.mapFromItem(trgNodeGI, trgNodeGI.bounds)).boundingRect()
+                            innerSpaceTop = min(srcNodeBounds.bottom(), trgNodeBounds.bottom())
+                            innerSpaceBottom = max(srcNodeBounds.top(), trgNodeBounds.top())
+                            if innerSpaceBottom - innerSpaceTop > 5:
+                                midPt = Point(midPt.x(), (innerSpaceTop + innerSpaceBottom)/2)
+                            else:
+                                if srcNodeBounds.top() > trgNodeBounds.top():
+                                    midPt = Point(midPt.x(), trgNodeBounds.top() - 20 - (stop.y() - trgNodeBounds.top()))
+                                else:
+                                    midPt = Point(midPt.x(), srcNodeBounds.top() - 20 - (
+                                                start.y() - srcNodeBounds.top()))
+                        else:
+                            if abs(start.y() - stop.y()) < 50:
+                                midPt = Point(midPt.x(), min(start.y(), stop.y()) - 50)
+
+                        path.clear()
+                        path.moveTo(start)
+                        dx = max(100, abs(start.x() - stop.x())/16)
+                        path.cubicTo(Point(srcCtrlX, srcCtrlY),
+                                     Point(midPt.x() + dx, midPt.y()),
+                                     midPt)
+                        path.cubicTo(Point(midPt.x() - dx, midPt.y()),
+                                     Point(trgCtrlX, trgCtrlY),
+                                     stop)
+
+
+
+
         else:
             raise Exception('Invalid shape "%s"; options are "line" or "cubic"' % self.style['shape'])
         return path
